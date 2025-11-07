@@ -1,8 +1,3 @@
-Got it, Hamshu ✅ — here’s a **short and clean README.md** version (no folder structure, no long setup).
-Perfect for GitHub or your portfolio 👇
-
----
-
 ## 📝 Mini To-Do App (FastAPI + Tailwind)
 
 A simple and elegant **To-Do web app** built using **FastAPI** for the backend and **Tailwind CSS** for the frontend.
