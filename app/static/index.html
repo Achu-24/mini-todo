@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini To-Do App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      transition: background 0.4s ease, color 0.4s ease;
+      min-height: 100vh;
+    }
+
+    .fade-enter {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+
+    .fade-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ✨ Clean, circular, glowing theme toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 12px #facc15;
+      transform: scale(1.05);
+    }
+
+    /* Make icon crisp and centered */
+    #themeIcon {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2.5;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col items-center justify-start pt-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white dark:from-gray-900 dark:to-gray-800 dark:text-gray-100">
+
+  <!-- ☀️🌙 Theme Toggle Button -->
+  <div class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+    <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 3v1m0 16v1m8.485-8.485h1M4.515 12.515h1M16.95 7.05l.707-.707M6.343 17.657l.707-.707M16.95 16.95l.707.707M6.343 6.343l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+    </svg>
+  </div>
+
+  <!-- Header -->
+  <h1 class="text-4xl font-extrabold mb-6 drop-shadow-lg">📝 My To-Do List</h1>
+
+  <!-- Input Form -->
+  <div class="flex gap-3 mb-8">
+    <input type="text" id="taskInput" placeholder="Add a new task..."
+      class="px-4 py-2 rounded-lg text-gray-800 w-64 shadow focus:ring-2 focus:ring-indigo-400 outline-none dark:bg-gray-700 dark:text-white" />
+    <button onclick="addTask()" class="bg-indigo-500 hover:bg-indigo-600 px-5 py-2 rounded-lg shadow-lg font-semibold transition">
+      Add
+    </button>
+  </div>
+
+  <!-- Task List -->
+  <ul id="taskList" class="w-80 space-y-3"></ul>
+
+  <script>
+    const apiUrl = "/tasks/";
+
+    // 🌙 Theme Toggle
+    const themeToggle = document.getElementById("themeToggle");
+    const html = document.documentElement;
+    const themeIcon = document.getElementById("themeIcon");
+
+    function setTheme(isDark) {
+      if (isDark) {
+        html.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+        themeIcon.outerHTML = `
+          <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21.752 15.002A9.718 9.718 0 0112 21a9.718 9.718 0 01-9.752-5.998A9.718 9.718 0 0112 3a9.718 9.718 0 019.752 5.998z" />
+          </svg>`;
+      } else {
+        html.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+        themeIcon.outerHTML = `
+          <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 3v1m0 16v1m8.485-8.485h1M4.515 12.515h1M16.95 7.05l.707-.707M6.343 17.657l.707-.707M16.95 16.95l.707.707M6.343 6.343l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>`;
+      }
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const isDark = !html.classList.contains("dark");
+      setTheme(isDark);
+    });
+
+    // Load saved theme
+    if (localStorage.getItem("theme") === "dark") {
+      setTheme(true);
+    }
+
+    // 🧩 Task Logic
+    async function fetchTasks() {
+      const res = await fetch(apiUrl);
+      const tasks = await res.json();
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+
+      tasks.forEach(t => {
+        const li = document.createElement("li");
+        li.className = `fade-enter bg-white text-gray-800 px-4 py-3 rounded-lg flex justify-between items-center shadow-md dark:bg-gray-700 dark:text-white ${t.completed ? 'opacity-60 line-through' : ''}`;
+        li.innerHTML = `
+          <span>${t.title}</span>
+          <div class="flex gap-2">
+            <button onclick="toggleTask(${t.id}, ${!t.completed})"
+              class="px-3 py-1 text-sm rounded-md ${t.completed ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-green-500 hover:bg-green-600'} text-white">
+              ${t.completed ? 'Undo' : 'Done'}
+            </button>
+            <button onclick="deleteTask(${t.id})"
+              class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 rounded-md text-white">
+              Delete
+            </button>
+          </div>
+        `;
+        list.appendChild(li);
+        setTimeout(() => li.classList.add("fade-enter-active"), 10);
+      });
+    }
+
+    async function addTask() {
+      const title = document.getElementById("taskInput").value;
+      if (!title.trim()) return;
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title })
+      });
+      document.getElementById("taskInput").value = "";
+      fetchTasks();
+    }
+
+    async function toggleTask(id, completed) {
+      const res = await fetch(apiUrl + id);
+      const task = await res.json();
+      task.completed = completed;
+      await fetch(apiUrl + id, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(task)
+      });
+      fetchTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(apiUrl + id, { method: "DELETE" });
+      fetchTasks();
+    }
+
+    fetchTasks();
+  </script>
+</body>
+</html>
