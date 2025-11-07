@@ -22,7 +22,6 @@
       transform: translateY(0);
     }
 
-    /* ✨ Clean, circular, glowing theme toggle */
     .theme-toggle {
       position: fixed;
       top: 20px;
@@ -47,7 +46,6 @@
       transform: scale(1.05);
     }
 
-    /* Make icon crisp and centered */
     #themeIcon {
       width: 22px;
       height: 22px;
@@ -58,7 +56,6 @@
 
 <body class="flex flex-col items-center justify-start pt-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white dark:from-gray-900 dark:to-gray-800 dark:text-gray-100">
 
-  <!-- ☀️🌙 Theme Toggle Button -->
   <div class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -66,10 +63,8 @@
     </svg>
   </div>
 
-  <!-- Header -->
   <h1 class="text-4xl font-extrabold mb-6 drop-shadow-lg">📝 My To-Do List</h1>
 
-  <!-- Input Form -->
   <div class="flex gap-3 mb-8">
     <input type="text" id="taskInput" placeholder="Add a new task..."
       class="px-4 py-2 rounded-lg text-gray-800 w-64 shadow focus:ring-2 focus:ring-indigo-400 outline-none dark:bg-gray-700 dark:text-white" />
@@ -78,13 +73,11 @@
     </button>
   </div>
 
-  <!-- Task List -->
   <ul id="taskList" class="w-80 space-y-3"></ul>
 
   <script>
     const apiUrl = "/tasks/";
 
-    // 🌙 Theme Toggle
     const themeToggle = document.getElementById("themeToggle");
     const html = document.documentElement;
     const themeIcon = document.getElementById("themeIcon");
@@ -116,12 +109,10 @@
       setTheme(isDark);
     });
 
-    // Load saved theme
     if (localStorage.getItem("theme") === "dark") {
       setTheme(true);
     }
 
-    // 🧩 Task Logic
     async function fetchTasks() {
       const res = await fetch(apiUrl);
       const tasks = await res.json();

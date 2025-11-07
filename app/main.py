@@ -4,9 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from contextlib import asynccontextmanager
 
-# -----------------------------
-# ⚙️ Database setup
-# -----------------------------
+
 sqlite_file_name = "database.db"
 engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=False)
 
@@ -15,9 +13,7 @@ class Task(SQLModel, table=True):
     title: str
     completed: bool = False
 
-# -----------------------------
-# ⚙️ Lifespan (new replacement for @app.on_event)
-# -----------------------------
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Starting Mini To-Do App...")
@@ -25,23 +21,16 @@ async def lifespan(app: FastAPI):
     yield
     print("🛑 Shutting down Mini To-Do App... Goodbye 👋")
 
-# -----------------------------
-# ⚙️ FastAPI app initialization
-# -----------------------------
+#  FastAPI app initialization
 app = FastAPI(title="Mini To-Do App", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# -----------------------------
-# 🏠 Serve Frontend
-# -----------------------------
 @app.get("/", response_class=HTMLResponse)
 def serve_ui(request: Request):
     with open("app/static/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
-# -----------------------------
-# 🧩 API Endpoints
-# -----------------------------
+
 @app.post("/tasks/", response_model=Task)
 def create_task(task: Task):
     with Session(engine) as session:
@@ -79,9 +68,6 @@ def delete_task(task_id: int):
         session.commit()
         return {"message": "Task deleted successfully"}
 
-# -----------------------------
-# 🏁 Local run support
-# -----------------------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
